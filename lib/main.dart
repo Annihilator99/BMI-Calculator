@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -36,8 +37,11 @@ class _MyHomePageState extends State<MyHomePage> {
   String gender = 'male';
   double height;
   double bmi;
-  var text_color_male = null;
-  var text_color_female = null;
+  static const color1 = Colors.blue;
+  static const color2 = Colors.black12;
+  var text_color_male = color2;
+  var text_color_female = color2;
+  bool _validate = false;
 
   final heightController = TextEditingController();
 
@@ -50,9 +54,189 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String calculateBMI() {
     if (_sliderValue != 0 && heightController.text != null) {
-      bmi = _sliderValue / pow(double.parse(heightController.text), 2);
+      var height = double.parse(heightController.text) / 100;
+      bmi = _sliderValue / pow(height, 2);
     }
     return bmi.toString();
+  }
+
+  Widget _buildGender() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        GestureDetector(
+          child: Container(
+            decoration: BoxDecoration(
+                color: text_color_male,
+                borderRadius: BorderRadius.all(Radius.circular(30))),
+            padding: EdgeInsets.all(30),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                SizedBox(
+                  height: 100,
+                  width: 100,
+                  child: Image.asset('graphics/male_symbol.png'),
+                ),
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  child: Text('Male'),
+                )
+              ],
+            ),
+          ),
+          onTap: () {
+            setState(() {
+              text_color_male = color1;
+              text_color_female = color2;
+            });
+            gender = 'male';
+          },
+        ),
+        GestureDetector(
+          child: Container(
+            decoration: BoxDecoration(
+                color: text_color_female,
+                borderRadius: BorderRadius.all(Radius.circular(30))),
+            padding: EdgeInsets.all(30),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                SizedBox(
+                  height: 100,
+                  width: 100,
+                  child: Image.asset('graphics/female-symbol.png'),
+                ),
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  child: Text('Female'),
+                )
+              ],
+            ),
+          ),
+          onTap: () {
+            setState(() {
+              text_color_male = color2;
+              text_color_female = color1;
+            });
+            gender = 'female';
+          },
+        )
+      ],
+    );
+  }
+
+  Widget _buildSlider() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(30)),
+        color: color2,
+      ),
+      margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+      padding: EdgeInsets.all(20),
+      child: Row(
+        children: [
+          Text('Weight (in kg)'),
+          Expanded(
+            flex: 2,
+            child: Slider(
+              value: _sliderValue,
+              min: 0,
+              max: 250,
+              divisions: 250,
+              label: _sliderValue.round().toString(),
+              onChanged: (double value) {
+                setState(() {
+                  _sliderValue = value;
+                });
+              },
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeight() {
+    return Container(
+        padding: EdgeInsets.fromLTRB(0, 10, 0, 20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(30)),
+          color: color2,
+        ),
+        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            SizedBox(
+              width: 150,
+              child: TextField(
+                onTap: () {
+                  setState(() {
+                    _validate = false;
+                  });
+                },
+                controller: heightController,
+                decoration: InputDecoration(
+                  hintText: 'Enter your Height',
+                  focusColor: Colors.blue,
+                  errorText: _validate ? 'Height cannot be left blank' : null,
+                  suffixText: 'cm',
+                ),
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.number,
+              ),
+            ),
+          ],
+        ));
+  }
+
+  Widget _buildButton() {
+    return GestureDetector(
+      onTap: () {
+        if (heightController.text.isEmpty) {
+          setState(() {
+            _validate = true;
+          });
+        } else {
+          setState(() {
+            _validate = false;
+          });
+          return showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Center(
+                  child: Text('Your BMI is'),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(calculateBMI()),
+                    Text(gender),
+                  ],
+                ),
+              );
+            },
+          );
+        }
+      },
+      child: Container(
+          height: 50,
+          width: 350,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(30)),
+            color: color1,
+          ),
+          margin: EdgeInsets.fromLTRB(0, 100, 0, 0),
+          child: Center(
+            child: Text(
+              'CALCULATE',
+              style: TextStyle(color: Colors.white),
+            ),
+          )),
+    );
   }
 
   @override
@@ -66,145 +250,10 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Card(
-                    color: text_color_male,
-                    child: InkWell(
-                      splashColor: Colors.blue,
-                      child: Container(
-                        padding: EdgeInsets.all(30),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            SizedBox(
-                              height: 100,
-                              width: 100,
-                              child: Image.asset('graphics/male_symbol.png'),
-                            ),
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                              child: Text('Male'),
-                            )
-                          ],
-                        ),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          text_color_male = Colors.blue;
-                          text_color_female = null;
-                        });
-                        gender = 'male';
-                      },
-                    )),
-                Card(
-                    color: text_color_female,
-                    child: InkWell(
-                      splashColor: Colors.blue,
-                      child: Container(
-                        padding: EdgeInsets.all(30),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            SizedBox(
-                              height: 100,
-                              width: 100,
-                              child: Image.asset('graphics/female-symbol.png'),
-                            ),
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                              child: Text('Female'),
-                            )
-                          ],
-                        ),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          text_color_male = null;
-                          text_color_female = Colors.blue;
-                        });
-                        gender = 'female';
-                      },
-                    )),
-              ],
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-              child: Row(
-                children: [
-                  Text('Weight'),
-                  Expanded(
-                    flex: 3,
-                    child: Slider(
-                      value: _sliderValue,
-                      min: 0,
-                      max: 250,
-                      divisions: 250,
-                      label: _sliderValue.round().toString(),
-                      onChanged: (double value) {
-                        setState(() {
-                          _sliderValue = value;
-                        });
-                      },
-                    ),
-                  )
-                ],
-              ),
-            ),
-            Container(
-                margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    SizedBox(
-                      width: 100,
-                      child: TextField(
-                        controller: heightController,
-                        decoration: InputDecoration(
-                          labelText: 'Height',
-                          focusColor: Colors.blue,
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                      child: Text(
-                        'cm',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    )
-                  ],
-                )),
-            Container(
-              margin: EdgeInsets.fromLTRB(0, 40, 0, 0),
-              child: RaisedButton(
-                onPressed: () {
-                  return showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text('Your BMI is'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(calculateBMI()),
-                            Text(gender),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-                child: SizedBox(
-                  height: 20,
-                  width: 300,
-                  child: Center(child: Text('Calculate')),
-                ),
-              ),
-            )
+            _buildGender(),
+            _buildSlider(),
+            _buildHeight(),
+            _buildButton()
           ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
