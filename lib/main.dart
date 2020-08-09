@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:splashscreen/splashscreen.dart';
 
 void main() {
   runApp(MyApp());
@@ -18,7 +19,30 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         accentColor: Colors.blue,
       ),
-      home: MyHomePage(title: 'BMI Calculator'),
+      home: Splash(),
+    );
+  }
+}
+
+class Splash extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SplashScreen(
+      backgroundColor: Colors.black12,
+      seconds: 3,
+      navigateAfterSeconds: new MyHomePage(title: 'BMI Calculator'),
+      title: Text(
+        'Welcome',
+        textScaleFactor: 3,
+        style: TextStyle(
+          color: Colors.white,
+        ),
+      ),
+      loadingText: Text(
+        'Initializing',
+        style: TextStyle(color: Colors.blue),
+      ),
+      loaderColor: Colors.blue,
     );
   }
 }
@@ -44,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _validate = false;
 
   final heightController = TextEditingController();
+
 
   @override
   void dispose() {
