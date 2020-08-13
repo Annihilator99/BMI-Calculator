@@ -1,8 +1,12 @@
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:splashscreen/splashscreen.dart';
+
+import 'bmi_history.dart';
 
 void main() {
   runApp(MyApp());
@@ -81,8 +85,21 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_sliderValue != 0 && heightController.text != null) {
       var height = double.parse(heightController.text) / 100;
       bmi = _sliderValue / pow(height, 2);
+
+      var newFormat = DateFormat("dd-MM-yyyy   HH:mm:ss");
+      String updatedDt = newFormat.format(DateTime.now());
+
+      Firestore.instance.runTransaction((transaction) async {
+        CollectionReference reference =
+            Firestore.instance.collection('BMI_LIST');
+
+        await reference.add({
+          "bmi": double.parse(bmi.toStringAsFixed(3)),
+          "date": updatedDt,
+        });
+      });
     }
-    return bmi.toString();
+    return bmi.toStringAsFixed(3);
   }
 
   Widget _buildGender() {
@@ -220,6 +237,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildButton() {
     return GestureDetector(
       onTap: () {
+
         if (heightController.text.isEmpty) {
           setState(() {
             _validate = true;
@@ -270,6 +288,12 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.list),
+            onPressed: _launchHistory,
+          )
+        ],
       ),
       body: Container(
         padding: EdgeInsets.all(20),
@@ -282,6 +306,16 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  void _launchHistory() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return bmi_list();
+        },
+      ),
     );
   }
 }
