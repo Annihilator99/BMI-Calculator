@@ -20,8 +20,8 @@ class _BMIListState extends State<bmi_list> {
 
   Widget _buildListItem(BuildContext context, DocumentSnapshot document) {
     return ListTile(
-      title: Text(document['bmi'].toString()),
-      subtitle: Text(document['date']),
+      title: Text(document.get('bmi').toString()),
+      subtitle: Text(document.get('date')),
     );
   }
 

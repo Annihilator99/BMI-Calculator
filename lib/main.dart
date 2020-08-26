@@ -1,10 +1,14 @@
 import 'dart:math';
 
+import 'package:bmi_calculator/welcome_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:splashscreen/splashscreen.dart';
+import 'package:loading/indicator/ball_pulse_indicator.dart';
+import 'package:loading/loading.dart';
 
 import 'bmi_history.dart';
 
@@ -14,47 +18,42 @@ void main() {
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        accentColor: Colors.blue,
-      ),
-      home: Splash(),
-    );
-  }
-}
 
-class Splash extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SplashScreen(
-      backgroundColor: Colors.black12,
-      seconds: 3,
-      navigateAfterSeconds: new MyHomePage(title: 'BMI Calculator'),
-      title: Text(
-        'Welcome',
-        textScaleFactor: 3,
-        style: TextStyle(
-          color: Colors.white,
-        ),
-      ),
-      loadingText: Text(
-        'Initializing',
-        style: TextStyle(color: Colors.blue),
-      ),
-      loaderColor: Colors.blue,
+    return FutureBuilder(
+      future: Firebase.initializeApp(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return AlertDialog(
+            title: Text('Something went wrong'),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.done) {
+          return MaterialApp(
+            title: 'Flutter Demo',
+            theme: ThemeData(
+                brightness: Brightness.dark,
+                visualDensity: VisualDensity.adaptivePlatformDensity,
+                accentColor: Colors.blue,
+                fontFamily: 'noto-=sans'),
+            home: WelcomePage(),
+          );
+        }
+
+        return Loading(
+          indicator: BallPulseIndicator(),
+          size: 10.0,
+          color: Colors.blue,
+        );
+      },
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
 
-  final String title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -118,7 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 SizedBox(
                   height: 100,
                   width: 100,
-                  child: Image.asset('graphics/male_symbol.png'),
+                  child: Image.asset('assets/images/male_symbol.png'),
                 ),
                 Container(
                   margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
@@ -147,7 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 SizedBox(
                   height: 100,
                   width: 100,
-                  child: Image.asset('graphics/female-symbol.png'),
+                  child: Image.asset('assets/images/female-symbol.png'),
                 ),
                 Container(
                   margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
@@ -287,11 +286,19 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(widget.title),
+        title: Text('BMI'),
         actions: [
           IconButton(
             icon: Icon(Icons.list),
             onPressed: _launchHistory,
+          ),
+          GestureDetector(
+            child: Center(
+              child: Text('Sign Out'),
+            ),
+            onTap: () {
+              signOut();
+            },
           )
         ],
       ),
@@ -317,5 +324,13 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
     );
+  }
+
+  Future<void> signOut() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacement(
+        context,
+        new MaterialPageRoute(
+            builder: (BuildContext context) => new WelcomePage()));
   }
 }
